@@ -27,10 +27,9 @@ def load_role_map():
 def read_google_sheet(sheet_url):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
-    # ✅ Load credentials from Streamlit Secrets (safe!)
-    import json
+    # ✅ Use Streamlit Secrets for credentials
     creds_dict = json.loads(st.secrets["GCP_CREDENTIALS"])
-    creds =  ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 
     client = gspread.authorize(creds)
     sheet = client.open_by_url(sheet_url)
@@ -90,7 +89,7 @@ if df is not None:
         st.header("3️⃣ Visualize Hierarchy")
 
         def draw_hierarchy(df):
-            dot = graphviz.Digraph(format="png")
+            dot = graphviz.Digraph()
             sorted_df = df.sort_values(by="Role")
 
             for _, row in sorted_df.iterrows():
@@ -99,22 +98,13 @@ if df is not None:
             for i in range(1, len(sorted_df)):
                 dot.edge(sorted_df.iloc[i - 1]["Name"], sorted_df.iloc[i]["Name"])
 
-            dot.render("org_chart", cleanup=True)
             return dot
 
         dot = draw_hierarchy(df)
         st.graphviz_chart(dot)
 
-        # ---- DOWNLOAD CHART BUTTON ----
-        with open("org_chart.png", "rb") as f:
-            st.download_button(
-                label="📥 Download Org Chart as PNG",
-                data=f,
-                file_name="org_chart.png",
-                mime="image/png"
-            )
+        st.success("✅ Org chart generated successfully!")
 
-        st.success("✅ Org chart generated!")
 
 
 
