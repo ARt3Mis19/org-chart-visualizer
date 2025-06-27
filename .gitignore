@@ -1,3 +1,11 @@
 credentials.json
 credentials.json
 credentials.json
+# 👇 Prevent Google credentials from being pushed
+credentials.json
+
+# 👇 Prevent saved role renaming presets
+role_presets.json
+
+# 👇 Prevent rendered org chart PNG or DOT files
+org_chart.*
