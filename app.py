@@ -7,97 +7,69 @@ import json
 import os
 
 # ---- PAGE CONFIG ----
-st.set_page_config(page_title="Org Chart Visualizer", page_icon="🎨", layout="wide")
+st.set_page_config(page_title="Org Chart Visualizer", page_icon="🧱", layout="wide")
 
-# ---- MODERN ARTSY HEADER ----
+# ---- NEO-BRUTALIST HEADER & STYLE ----
 st.markdown("""
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
+
+        html, body, .stApp {
+            background-color: #fdfdfd;
+            color: #000000;
+            font-family: 'Space Mono', monospace;
+        }
+
         .main-title {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 3.5em;
-            font-weight: 900;
+            font-size: 3em;
+            font-weight: bold;
             text-align: center;
-            background: linear-gradient(to right, #ff6a00, #ee0979);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: fadeIn 1.5s ease-in-out;
-            margin-top: 20px;
+            background-color: #000;
+            color: #fff;
+            padding: 15px;
+            border: 4px solid #000;
+            box-shadow: 5px 5px 0 #ff00aa;
+            margin: 20px;
         }
-        @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(-10px);}
-            to {opacity: 1; transform: translateY(0);}
+
+        .block-style {
+            border: 3px solid #000;
+            background-color: #ffff00;
+            padding: 10px;
+            margin: 20px 0;
+            box-shadow: 4px 4px 0 #000;
         }
+
+        .stButton>button, .stTextInput>div>input {
+            border: 3px solid #000 !important;
+            box-shadow: 3px 3px 0 #000 !important;
+            font-family: 'Space Mono', monospace;
+        }
+
         .fab-button {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: linear-gradient(45deg, #ee0979, #ff6a00);
-            color: white;
+            background: #000;
+            color: #fff;
             border-radius: 50%;
             width: 60px;
             height: 60px;
             font-size: 28px;
             text-align: center;
             line-height: 60px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 5px 5px 0 #ff00aa;
             cursor: pointer;
             z-index: 100;
-            transition: background 0.3s ease-in-out;
-        }
-        .fab-button:hover {
-            background: linear-gradient(45deg, #ff6a00, #ee0979);
-        }
-        body {
-            background-color: #f4f4f9;
-            color: #1a1a1a;
-        }
-        .stApp {
-            background-color: #f4f4f9;
-            color: #1a1a1a;
-        }
-        .dark-theme body, .dark-theme .stApp {
-            background-color: #1e1e2f !important;
-            color: #ffffff !important;
         }
     </style>
-    <div class='main-title'>🖌️ Org Chart Visualizer</div>
+    <div class='main-title'>🧱 Org Chart Visualizer</div>
     <a href='#top'>
         <div class='fab-button'>↑</div>
     </a>
 """, unsafe_allow_html=True)
 
-st.caption("A vibrant and intuitive way to visualize your organization's structure.")
-
-# ---- THEME TOGGLE ----
-theme = st.sidebar.radio("Choose Theme", ["White", "Dark"])
-if theme == "Dark":
-    st.markdown("""
-        <style>
-        body, .stApp {
-            background-color: #1e1e2f !important;
-            color: #ffffff !important;
-        }
-        .stTextInput input, .stSelectbox, .stButton>button {
-            background-color: #2e2e3e !important;
-            color: #ffffff !important;
-            border-color: #444 !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <style>
-        body, .stApp {
-            background-color: #f4f4f9 !important;
-            color: #1a1a1a !important;
-        }
-        .stTextInput input, .stSelectbox, .stButton>button {
-            background-color: #ffffff !important;
-            color: #1a1a1a !important;
-            border-color: #ccc !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+st.caption("Visualize your organization in brutal clarity.")
 
 # ---- UTILS ----
 def save_role_map(role_map):
@@ -128,29 +100,30 @@ st.sidebar.header("📁 Upload Options")
 source = st.sidebar.radio("Select Source", ["Google Sheet", "LibreOffice (.ods)"])
 
 # ---- SECTION 1: Upload ----
-st.markdown("## 🎨 Step 1: Upload Your Org Sheet")
+st.markdown("## 📤 Step 1: Upload Your Org Sheet", unsafe_allow_html=True)
 
-df = None
-if source == "Google Sheet":
-    sheet_url = st.text_input("Paste your Google Sheet URL:")
-    if sheet_url:
-        try:
-            df = read_google_sheet(sheet_url)
-            st.success("✅ Google Sheet loaded successfully!")
-        except Exception as e:
-            st.error(f"❌ Error loading sheet: {e}")
-else:
-    uploaded_file = st.file_uploader("Upload LibreOffice (.ods) file:", type=["ods"])
-    if uploaded_file:
-        try:
-            df = read_ods(uploaded_file)
-            st.success("✅ LibreOffice file uploaded successfully!")
-        except Exception as e:
-            st.error(f"❌ Error reading file: {e}")
+with st.container():
+    df = None
+    if source == "Google Sheet":
+        sheet_url = st.text_input("Paste your Google Sheet URL:")
+        if sheet_url:
+            try:
+                df = read_google_sheet(sheet_url)
+                st.success("✅ Google Sheet loaded successfully!")
+            except Exception as e:
+                st.error(f"❌ Error loading sheet: {e}")
+    else:
+        uploaded_file = st.file_uploader("Upload LibreOffice (.ods) file:", type=["ods"])
+        if uploaded_file:
+            try:
+                df = read_ods(uploaded_file)
+                st.success("✅ LibreOffice file uploaded successfully!")
+            except Exception as e:
+                st.error(f"❌ Error reading file: {e}")
 
 # ---- SECTION 2: Rename Roles ----
 if df is not None:
-    st.markdown("## 🧩 Step 2: Rename or Standardize Roles")
+    st.markdown("## ✏️ Step 2: Rename or Standardize Roles", unsafe_allow_html=True)
     st.dataframe(df)
 
     if "Name" not in df.columns or "Role" not in df.columns:
@@ -159,7 +132,7 @@ if df is not None:
         role_map = load_role_map()
         new_role_map = {}
 
-        with st.expander("🎨 Customize Roles"):
+        with st.expander("🛠️ Customize Roles"):
             for role in df["Role"].unique():
                 new_name = st.text_input(f"Rename '{role}' to:", value=role_map.get(role, role))
                 new_role_map[role] = new_name
@@ -171,7 +144,7 @@ if df is not None:
         df["Role"] = df["Role"].map(new_role_map)
 
         # ---- SECTION 3: Visualize Org Chart ----
-        with st.expander("🖼️ Step 3: Visualize Org Chart", expanded=True):
+        with st.expander("📈 Step 3: Visualize Org Chart", expanded=True):
             def draw_hierarchy(df):
                 dot = graphviz.Digraph()
                 sorted_df = df.sort_values(by="Role")
@@ -183,7 +156,8 @@ if df is not None:
 
             dot = draw_hierarchy(df)
             st.graphviz_chart(dot)
-            st.toast("✅ Org chart is ready!", icon="🎉")
+            st.toast("✅ Org chart is ready!", icon="💼")
+
 
 
 
