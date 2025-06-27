@@ -3,17 +3,16 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import graphviz
-from io import BytesIO
 import json
 import os
 
-# --- PAGE CONFIG ---
+# ---- PAGE CONFIG ----
 st.set_page_config(page_title="Org Chart Visualizer", page_icon="📊", layout="centered")
 
 st.title("📊 Org Chart Visualizer")
 st.caption("Easily visualize organizational hierarchies from Google Sheets or LibreOffice files.")
 
-# --- ROLE PRESET UTILS ---
+# ---- ROLE PRESET UTILS ----
 def save_role_map(role_map):
     with open("role_presets.json", "w") as f:
         json.dump(role_map, f)
@@ -24,10 +23,15 @@ def load_role_map():
             return json.load(f)
     return {}
 
-# --- SHEET READERS ---
+# ---- SHEET READERS ----
 def read_google_sheet(sheet_url):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    
+    # ✅ Load credentials from Streamlit Secrets (safe!)
+    import json
+    creds_dict = json.loads(st.secrets["GCP_CREDENTIALS"])
+    creds =  ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+
     client = gspread.authorize(creds)
     sheet = client.open_by_url(sheet_url)
     worksheet = sheet.get_worksheet(0)
@@ -37,7 +41,7 @@ def read_google_sheet(sheet_url):
 def read_ods(file):
     return pd.read_excel(file, engine="odf")
 
-# --- SECTION 1: Upload ---
+# ---- SECTION 1: Upload ----
 st.header("1️⃣ Upload Your Org Sheet")
 source = st.radio("Select Source:", ["Google Sheet", "Upload LibreOffice Sheet (.ods)"])
 
@@ -59,7 +63,7 @@ else:
         except Exception as e:
             st.error(f"❌ Error reading file: {e}")
 
-# --- SECTION 2: Rename Roles ---
+# ---- SECTION 2: Rename Roles ----
 if df is not None:
     st.subheader("📄 Preview of Uploaded Data")
     st.dataframe(df)
@@ -82,7 +86,7 @@ if df is not None:
 
         df["Role"] = df["Role"].map(new_role_map)
 
-        # --- SECTION 3: Visualize Org Chart ---
+        # ---- SECTION 3: Visualize Org Chart ----
         st.header("3️⃣ Visualize Hierarchy")
 
         def draw_hierarchy(df):
@@ -101,7 +105,7 @@ if df is not None:
         dot = draw_hierarchy(df)
         st.graphviz_chart(dot)
 
-        # --- DOWNLOAD CHART BUTTON ---
+        # ---- DOWNLOAD CHART BUTTON ----
         with open("org_chart.png", "rb") as f:
             st.download_button(
                 label="📥 Download Org Chart as PNG",
@@ -111,5 +115,6 @@ if df is not None:
             )
 
         st.success("✅ Org chart generated!")
+
 
 
