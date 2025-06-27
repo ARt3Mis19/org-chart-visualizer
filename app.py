@@ -7,12 +7,63 @@ import json
 import os
 
 # ---- PAGE CONFIG ----
-st.set_page_config(page_title="Org Chart Visualizer", page_icon="📊", layout="centered")
+st.set_page_config(page_title="Org Chart Visualizer", page_icon="📊", layout="wide")
 
-st.title("📊 Org Chart Visualizer")
-st.caption("Easily visualize organizational hierarchies from Google Sheets or LibreOffice files.")
+# ---- CUSTOM HEADER ----
+st.markdown("""
+    <style>
+        .main-title {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            color: #4CAF50;
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .fab-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            text-align: center;
+            line-height: 60px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 100;
+        }
+        .fab-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <div class='main-title'>📊 Org Chart Visualizer</div>
+    <a href='#top'>
+        <div class='fab-button'>↑</div>
+    </a>
+""", unsafe_allow_html=True)
 
-# ---- ROLE PRESET UTILS ----
+st.caption("Visualize organizational hierarchies from Google Sheets or LibreOffice files.")
+
+# ---- THEME TOGGLE ----
+theme = st.sidebar.radio("Choose Theme", ["Light", "Dark"])
+if theme == "Dark":
+    st.markdown("""
+        <style>
+        body, .stApp {
+            background-color: #111111;
+            color: white;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+# ---- UTILS ----
 def save_role_map(role_map):
     with open("role_presets.json", "w") as f:
         json.dump(role_map, f)
@@ -23,14 +74,10 @@ def load_role_map():
             return json.load(f)
     return {}
 
-# ---- SHEET READERS ----
 def read_google_sheet(sheet_url):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    
-    # ✅ Use Streamlit Secrets for credentials
     creds_dict = json.loads(st.secrets["GCP_CREDENTIALS"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-
     client = gspread.authorize(creds)
     sheet = client.open_by_url(sheet_url)
     worksheet = sheet.get_worksheet(0)
@@ -40,9 +87,12 @@ def read_google_sheet(sheet_url):
 def read_ods(file):
     return pd.read_excel(file, engine="odf")
 
+# ---- SIDEBAR INPUT ----
+st.sidebar.header("📁 Upload Options")
+source = st.sidebar.radio("Select Source", ["Google Sheet", "LibreOffice (.ods)"])
+
 # ---- SECTION 1: Upload ----
-st.header("1️⃣ Upload Your Org Sheet")
-source = st.radio("Select Source:", ["Google Sheet", "Upload LibreOffice Sheet (.ods)"])
+st.markdown("## 🗂️ Step 1: Upload Your Org Sheet")
 
 df = None
 if source == "Google Sheet":
@@ -64,20 +114,19 @@ else:
 
 # ---- SECTION 2: Rename Roles ----
 if df is not None:
-    st.subheader("📄 Preview of Uploaded Data")
+    st.markdown("## 📝 Step 2: Rename or Standardize Roles")
     st.dataframe(df)
 
     if "Name" not in df.columns or "Role" not in df.columns:
         st.warning("⚠️ Sheet must contain 'Name' and 'Role' columns.")
     else:
-        st.header("2️⃣ Rename or Standardize Roles (Optional)")
-
         role_map = load_role_map()
         new_role_map = {}
 
-        for role in df["Role"].unique():
-            new_name = st.text_input(f"Rename '{role}' to:", value=role_map.get(role, role))
-            new_role_map[role] = new_name
+        with st.expander("🔧 Rename Roles"):
+            for role in df["Role"].unique():
+                new_name = st.text_input(f"Rename '{role}' to:", value=role_map.get(role, role))
+                new_role_map[role] = new_name
 
         if st.button("💾 Save Presets"):
             save_role_map(new_role_map)
@@ -86,24 +135,21 @@ if df is not None:
         df["Role"] = df["Role"].map(new_role_map)
 
         # ---- SECTION 3: Visualize Org Chart ----
-        st.header("3️⃣ Visualize Hierarchy")
+        with st.expander("🎯 Step 3: Visualize Org Chart", expanded=True):
+            def draw_hierarchy(df):
+                dot = graphviz.Digraph()
+                sorted_df = df.sort_values(by="Role")
+                for _, row in sorted_df.iterrows():
+                    dot.node(row["Name"], f'{row["Name"]}\n({row["Role"]})')
+                for i in range(1, len(sorted_df)):
+                    dot.edge(sorted_df.iloc[i - 1]["Name"], sorted_df.iloc[i]["Name"])
+                return dot
 
-        def draw_hierarchy(df):
-            dot = graphviz.Digraph()
-            sorted_df = df.sort_values(by="Role")
+            dot = draw_hierarchy(df)
+            st.graphviz_chart(dot)
+            st.toast("✅ Org chart is ready!", icon="🎉")
+            st.balloons()
 
-            for _, row in sorted_df.iterrows():
-                dot.node(row["Name"], f'{row["Name"]}\n({row["Role"]})')
-
-            for i in range(1, len(sorted_df)):
-                dot.edge(sorted_df.iloc[i - 1]["Name"], sorted_df.iloc[i]["Name"])
-
-            return dot
-
-        dot = draw_hierarchy(df)
-        st.graphviz_chart(dot)
-
-        st.success("✅ Org chart generated successfully!")
 
 
 
