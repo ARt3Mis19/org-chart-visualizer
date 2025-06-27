@@ -173,7 +173,7 @@ if df is not None:
         # ---- SECTION 3: Visualize Org Chart ----
         with st.expander("📈 Step 3: Visualize Org Chart", expanded=True):
             def draw_hierarchy(df):
-                dot = graphviz.Digraph()
+                dot = graphviz.Digraph(format="png")
                 sorted_df = df.sort_values(by="Role")
                 colors = ["#f72585", "#b5179e", "#7209b7", "#560bad", "#480ca8", "#3f37c9", "#4361ee", "#4895ef", "#4cc9f0"]
                 role_color = {role: colors[i % len(colors)] for i, role in enumerate(sorted_df["Role"].unique())}
@@ -190,11 +190,11 @@ if df is not None:
         # ---- SECTION 4: Export Chart ----
         with st.expander("📥 Step 4: Export Chart"):
             try:
-                dot.render("org_chart", format="png", cleanup=True)
-                with open("org_chart.png", "rb") as f:
+                graph_file = dot.render("org_chart", cleanup=True)
+                with open(graph_file, "rb") as f:
                     st.download_button("📸 Download Org Chart PNG", f, file_name="org_chart.png")
-            except:
-                st.error("⚠️ Could not render chart for download.")
+            except Exception as e:
+                st.error(f"⚠️ Could not render chart for download: {e}")
 
         # ---- SECTION 5: Analytics ----
         with st.expander("📊 Step 5: Org Insights"):
@@ -209,6 +209,7 @@ if df is not None:
             st.altair_chart(chart, use_container_width=True)
 
         st.toast("✅ Org chart is ready!", icon="💼")
+
 
 
 
