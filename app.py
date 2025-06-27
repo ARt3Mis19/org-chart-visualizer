@@ -49,9 +49,15 @@ st.markdown("""
         }
         body {
             background-color: #f4f4f9;
+            color: #1a1a1a;
         }
         .stApp {
             background-color: #f4f4f9;
+            color: #1a1a1a;
+        }
+        .dark-theme body, .dark-theme .stApp {
+            background-color: #1e1e2f !important;
+            color: #ffffff !important;
         }
     </style>
     <div class='main-title'>🖌️ Org Chart Visualizer</div>
@@ -68,8 +74,27 @@ if theme == "Dark":
     st.markdown("""
         <style>
         body, .stApp {
-            background-color: #1e1e2f;
-            color: white;
+            background-color: #1e1e2f !important;
+            color: #ffffff !important;
+        }
+        .stTextInput input, .stSelectbox, .stButton>button {
+            background-color: #2e2e3e !important;
+            color: #ffffff !important;
+            border-color: #444 !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <style>
+        body, .stApp {
+            background-color: #f4f4f9 !important;
+            color: #1a1a1a !important;
+        }
+        .stTextInput input, .stSelectbox, .stButton>button {
+            background-color: #ffffff !important;
+            color: #1a1a1a !important;
+            border-color: #ccc !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -159,6 +184,7 @@ if df is not None:
             dot = draw_hierarchy(df)
             st.graphviz_chart(dot)
             st.toast("✅ Org chart is ready!", icon="🎉")
+
 
 
 
