@@ -7,27 +7,31 @@ import json
 import os
 
 # ---- PAGE CONFIG ----
-st.set_page_config(page_title="Org Chart Visualizer", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Org Chart Visualizer", page_icon="🎨", layout="wide")
 
-# ---- CUSTOM HEADER ----
+# ---- MODERN ARTSY HEADER ----
 st.markdown("""
     <style>
         .main-title {
-            font-size: 3em;
-            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3.5em;
+            font-weight: 900;
             text-align: center;
-            color: #4CAF50;
-            animation: fadeIn 2s ease-in-out;
+            background: linear-gradient(to right, #ff6a00, #ee0979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 1.5s ease-in-out;
+            margin-top: 20px;
         }
         @keyframes fadeIn {
-            from {opacity: 0;}
-            to {opacity: 1;}
+            from {opacity: 0; transform: translateY(-10px);}
+            to {opacity: 1; transform: translateY(0);}
         }
         .fab-button {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background-color: #4CAF50;
+            background: linear-gradient(45deg, #ee0979, #ff6a00);
             color: white;
             border-radius: 50%;
             width: 60px;
@@ -35,21 +39,28 @@ st.markdown("""
             font-size: 28px;
             text-align: center;
             line-height: 60px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             z-index: 100;
+            transition: background 0.3s ease-in-out;
         }
         .fab-button:hover {
-            background-color: #45a049;
+            background: linear-gradient(45deg, #ff6a00, #ee0979);
+        }
+        body {
+            background-color: #f4f4f9;
+        }
+        .stApp {
+            background-color: #f4f4f9;
         }
     </style>
-    <div class='main-title'>📊 Org Chart Visualizer</div>
+    <div class='main-title'>🖌️ Org Chart Visualizer</div>
     <a href='#top'>
         <div class='fab-button'>↑</div>
     </a>
 """, unsafe_allow_html=True)
 
-st.caption("Visualize organizational hierarchies from Google Sheets or LibreOffice files.")
+st.caption("A vibrant and intuitive way to visualize your organization's structure.")
 
 # ---- THEME TOGGLE ----
 theme = st.sidebar.radio("Choose Theme", ["White", "Dark"])
@@ -57,7 +68,7 @@ if theme == "Dark":
     st.markdown("""
         <style>
         body, .stApp {
-            background-color: #111111;
+            background-color: #1e1e2f;
             color: white;
         }
         </style>
@@ -92,7 +103,7 @@ st.sidebar.header("📁 Upload Options")
 source = st.sidebar.radio("Select Source", ["Google Sheet", "LibreOffice (.ods)"])
 
 # ---- SECTION 1: Upload ----
-st.markdown("## 🗂️ Step 1: Upload Your Org Sheet")
+st.markdown("## 🎨 Step 1: Upload Your Org Sheet")
 
 df = None
 if source == "Google Sheet":
@@ -114,7 +125,7 @@ else:
 
 # ---- SECTION 2: Rename Roles ----
 if df is not None:
-    st.markdown("## 📝 Step 2: Rename or Standardize Roles")
+    st.markdown("## 🧩 Step 2: Rename or Standardize Roles")
     st.dataframe(df)
 
     if "Name" not in df.columns or "Role" not in df.columns:
@@ -123,7 +134,7 @@ if df is not None:
         role_map = load_role_map()
         new_role_map = {}
 
-        with st.expander("🔧 Rename Roles"):
+        with st.expander("🎨 Customize Roles"):
             for role in df["Role"].unique():
                 new_name = st.text_input(f"Rename '{role}' to:", value=role_map.get(role, role))
                 new_role_map[role] = new_name
@@ -135,7 +146,7 @@ if df is not None:
         df["Role"] = df["Role"].map(new_role_map)
 
         # ---- SECTION 3: Visualize Org Chart ----
-        with st.expander("🎯 Step 3: Visualize Org Chart", expanded=True):
+        with st.expander("🖼️ Step 3: Visualize Org Chart", expanded=True):
             def draw_hierarchy(df):
                 dot = graphviz.Digraph()
                 sorted_df = df.sort_values(by="Role")
@@ -148,7 +159,7 @@ if df is not None:
             dot = draw_hierarchy(df)
             st.graphviz_chart(dot)
             st.toast("✅ Org chart is ready!", icon="🎉")
-            st.balloons()
+
 
 
 
