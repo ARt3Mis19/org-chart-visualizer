@@ -52,7 +52,7 @@ st.markdown("""
 st.caption("Visualize organizational hierarchies from Google Sheets or LibreOffice files.")
 
 # ---- THEME TOGGLE ----
-theme = st.sidebar.radio("Choose Theme", ["Light", "Dark"])
+theme = st.sidebar.radio("Choose Theme", ["White", "Dark"])
 if theme == "Dark":
     st.markdown("""
         <style>
@@ -149,6 +149,7 @@ if df is not None:
             st.graphviz_chart(dot)
             st.toast("✅ Org chart is ready!", icon="🎉")
             st.balloons()
+
 
 
 
