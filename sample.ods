@@ -1,0 +1,70 @@
+# 📂 Sample CSVs for Testing the Visualization Dashboard
+
+Use these samples to test the functionality and robustness of your Organizational Hierarchy Dashboard.
+
+---
+
+## ✅ Sample 1: Basic Hierarchy
+
+*Filename:* example_basic.csv
+
+csv
+Employee,Manager
+Alice,Bob
+Bob,Carol
+Carol,CEO
+David,Bob
+Eve,Carol
+
+
+---
+
+## ✅ Sample 2: Complex Hierarchy
+
+*Filename:* example_complex.csv
+
+csv
+Employee,Manager
+Alice,Bob
+Bob,Carol
+Carol,CEO
+David,Bob
+Eve,Carol
+Frank,CEO
+Grace,Frank
+Heidi,Grace
+Ivan,Frank
+Judy,Carol
+Ken,David
+Liam,Eve
+
+
+---
+
+## ⚠ Sample 3: Edge Case (Odd Structure)
+
+*Filename:* example_odd.csv
+
+csv
+Employee,Manager
+Alice,Bob
+Bob,Alice
+Carol,CEO
+David,
+Eve,Carol
+Frank,Frank
+
+
+🧪 *Notes:*
+- Circular reference: Alice <-> Bob
+- Missing manager value for David
+- Self-managed employee (Frank)
+
+These cases are designed to test input validation and graph error handling.
+
+---
+
+## 📌 How to Use
+1. Copy any CSV block above into a .csv file using a text editor.
+2. Upload the file into your dashboard using the Streamlit uploader.
+3. Observe the graph and behavior to ensure expected handling.
